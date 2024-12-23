@@ -263,11 +263,6 @@ func (t Time) Year() int {
 	return t.time.Year()
 }
 
-// YearDay 返回年份中的日期，非闰年的范围为 [1,365]，闰年的范围为 [1,366]。
-func (t Time) YearDay() int {
-	return t.time.YearDay()
-}
-
 // Month 返回 t 的月份
 func (t Time) Month() int {
 	return int(t.time.Month())
@@ -276,16 +271,6 @@ func (t Time) Month() int {
 // Day 返回 t 的天数
 func (t Time) Day() int {
 	return t.time.Day()
-}
-
-// Days 返回本月份的最大天数
-func (t Time) Days() int {
-	return DaysIn(t.Year(), t.Month())
-}
-
-// Weekday 返回星期
-func (t Time) Weekday() time.Weekday {
-	return t.time.Weekday()
 }
 
 // Hour 返回小时，范围 [0, 23]
@@ -309,6 +294,26 @@ func (t Time) Second(n ...int) int {
 	}
 	divisor := int(math.Pow10(9 - Clamp(n[0], 1, 9)))
 	return t.time.Nanosecond() / divisor
+}
+
+// Clock 返回一天中的小时、分钟和秒
+func (t Time) Clock() (hour, min, sec int) {
+	return t.time.Clock()
+}
+
+// Weekday 返回星期几
+func (t Time) Weekday() time.Weekday {
+	return t.time.Weekday()
+}
+
+// YearDay 返回年份中的日期，非闰年的范围为 [1,365]，闰年的范围为 [1,366]。
+func (t Time) YearDay() int {
+	return t.time.YearDay()
+}
+
+// Days 返回本月份的最大天数
+func (t Time) Days() int {
+	return DaysIn(t.Year(), t.Month())
 }
 
 // Unix 返回时间戳，可选择指定精度。
@@ -343,14 +348,42 @@ func (t Time) In(loc *time.Location) Time {
 	return Time{time: t.time.In(loc)}
 }
 
-// Location 返回时区信息
-func (t Time) Location() *time.Location {
-	return t.time.Location()
+// Round 返回距离当前时间最近的 "跃点"。
+//
+// 这个函数有点不好理解，让我来尝试解释一下：
+// 想象在当前时间之外存在着另一个时间循环，时间轴每次移动 d，而每个 d 就是一个 "跃点"。
+// 该函数将返回距离当前时间最近的那个 "跃点"，如果当前时间正好位于两个 "跃点" 中间，返回指向未来的那个 "跃点"。
+//
+// 示例：假设当前时间是 2021-07-21 14:35:29.650
+//
+//   - 舍入到秒：t.Round(time.Second)
+//
+//     根据定义，时间 14:35:29.650 距离下一个跃点 14:35:30.000 最近 (只需要 0.35ns)，
+//     而距离上一个跃点 14:35:29.000 较远 (需要 65ns)，故返回下一个跃点 14:35:30.000。
+//
+//   - 舍入分钟：t.Round(time.Minute)
+//
+//     时间 14:35:29.650 距离上一个跃点 14:35:00 最近（只需要 29.650s），
+//     而距离下一个跃点 14:36:00 较远 (需要 30.350s)，故返回上一个跃点 14:35:00.000。
+//
+//   - 舍入 15 分钟：t.Round(15 * time.Minute)
+//
+//     跃点：14:00:00, 14:15:00, 14:30:00, 14:45:00。
+//
+//     时间 14:35:29.650 处在 14:30:00 (上一个跃点) 和 14:45:00 (下一个跃点) 之间，
+//     距离上一个跃点最近，故返回上一个跃点时间：14:30:00。
+func (t Time) Round(d time.Duration) Time {
+	return Time{time: t.time.Round(d)}
 }
 
 // Time 返回 time.Time
 func (t Time) Time() time.Time {
 	return t.time
+}
+
+// Location 返回时区信息
+func (t Time) Location() *time.Location {
+	return t.time.Location()
 }
 
 // ---- 比较时间 ----
@@ -475,7 +508,6 @@ func IsLeap(year int) bool {
 // 1, 3, 5, 7, 8, 10, 12 月有 31 天；4, 6, 9, 11 月有 30 天；
 // 平年 2 月有 28 天，闰年 29 天。
 func DaysIn(y, m int) int {
-	m = int(math.Abs(float64(m)))
 	if m == 2 && IsLeap(y) {
 		return 29
 	}
