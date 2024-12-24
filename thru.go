@@ -368,12 +368,24 @@ func (t Time) In(loc *time.Location) Time {
 //
 //   - 舍入 15 分钟：t.Round(15 * time.Minute)
 //
-//     跃点：14:00:00, 14:15:00, 14:30:00, 14:45:00。
+//     跃点：--- 14:00:00 --- 14:15:00 --- 14:30:00 -- t --- 14:45:00 ---
 //
-//     时间 14:35:29.650 处在 14:30:00 (上一个跃点) 和 14:45:00 (下一个跃点) 之间，
+//     时间 14:35:29.650 处在 14:30 (上一个跃点) 和 14:45 (下一个跃点) 之间，
 //     距离上一个跃点最近，故返回上一个跃点时间：14:30:00。
 func (t Time) Round(d time.Duration) Time {
 	return Time{time: t.time.Round(d)}
+}
+
+// Truncate 与 Round 类似，但是 Truncate 永远返回指向过去时间的 "跃点"，不会进行四舍五入。
+//
+// 可视化理解：
+//
+//	---|-------|-------|-------|---- 时间线
+//	  d1       t      d2      d3
+//
+// Truncate 将永远返回 d1，如果时间 t 正好处于某个 "跃点" 位置，返回 t。
+func (t Time) Truncate(d time.Duration) Time {
+	return Time{time: t.time.Truncate(d)}
 }
 
 // Time 返回 time.Time
@@ -496,6 +508,11 @@ func (t Time) ZeroOr(u Time) Time {
 		return u
 	}
 	return t
+}
+
+// IsDST 返回时间是否夏令时
+func (t Time) IsDST() bool {
+	return t.time.IsDST()
 }
 
 // IsLeap 返回 year 是否闰年
