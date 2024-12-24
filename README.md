@@ -133,8 +133,8 @@ Time() Time                 // 返回 time.Time
 
 比较时间差主要由以下两个函数返回，可指定要比较的时间单位。
 
-- `DiffIn(u Time, uint string)`
-- `DiffAbsIn(u Time, uint string)`
+- `DiffIn(u Time, uint string) int`
+- `DiffAbsIn(u Time, uint string) int`
 
 ```go
 DiffIn('y') // 返回年差
