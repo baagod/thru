@@ -119,7 +119,7 @@ Unix(3) int64  // 毫秒时间戳 (13位)
 Unix(6) int64  // 微秒时间戳 (16位)
 Unix(9) int64  // 纳秒时间戳 (19位)
 
-Round(d time.Duration) Time // 将时间四舍五入到最近接 d 的时间 (详情查阅注释)
+Round(d time.Duration) Time    // 将时间四舍五入到最近接 d 的时间 (详情查阅注释)
 Truncate(d time.Duration) Time // 永远向下取整到最近接 d 的时间 (详情查阅注释)
 
 UTC() Time                  // 返回 UTC 时间
