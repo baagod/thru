@@ -306,13 +306,18 @@ func (t Time) Weekday() time.Weekday {
 	return t.time.Weekday()
 }
 
-// YearDay 返回年份中的日期，非闰年的范围为 [1,365]，闰年的范围为 [1,366]。
+// YearDay 返回一年中的第几天，非闰年范围 [1,365]，闰年范围 [1,366]。
 func (t Time) YearDay() int {
 	return t.time.YearDay()
 }
 
-// Days 返回本月份的最大天数
+// Days 返回本年总天数
 func (t Time) Days() int {
+	return DaysIn(t.Year())
+}
+
+// MonthDays 返回本月总天数
+func (t Time) MonthDays() int {
 	return DaysIn(t.Year(), t.Month())
 }
 
@@ -380,8 +385,8 @@ func (t Time) Round(d time.Duration) Time {
 //
 // 可视化理解：
 //
-//	---|-------|-------|-------|---- 时间线
-//	  d1       t      d2      d3
+//	----|----|----|----|----
+//	   d1    t   d2   d3
 //
 // Truncate 将永远返回 d1，如果时间 t 正好处于某个 "跃点" 位置，返回 t。
 func (t Time) Truncate(d time.Duration) Time {
@@ -400,35 +405,46 @@ func (t Time) Location() *time.Location {
 
 // ---- 比较时间 ----
 
-// DiffIn 返回 t 和 u 的时间差。
-//
-// 参数 unit 指定返回差异的单位：
+// DiffIn 返回 t 和 u 的时间差。使用 unit 参数指定比较单位：
 //   - "y": 年
 //   - "M": 月
 //   - "d": 日
 //   - "h": 小时
 //   - "m": 分钟
 //   - "s": 秒
-func (t Time) DiffIn(u Time, unit string) int {
+func (t Time) DiffIn(u Time, unit string) float64 {
 	switch unit {
 	case "y":
-		return t.Year() - u.Year()
+		tDays := float64(t.YearDay()) / float64(t.Days())
+		uDays := float64(u.YearDay()) / float64(u.Days())
+		return float64(t.Year()-u.Year()) + tDays - uDays
 	case "M":
-		return (t.Year()-u.Year())*12 + t.Month() - u.Month()
+		// 计算 [初始月差] 并将结果转换为浮点数：初始月差 = (年份差 * 12) + 月份差
+		months := float64((t.Year()-u.Year())*12 + t.Month() - u.Month())
+		// 计算 [天差] 并将结果转换为浮点数：天差 = t.Day() - u.Day()
+		days := float64(t.Day() - u.Day())
+		// 如果天差为负数，表示未满一个完整的月，需要将月差减 1。
+		if days < 0 {
+			months--
+		}
+		// 计算 [总月份差]，包括小数部分：总月份差 = 初始月差 + 天差 / u.Days()
+		// 计算小数部分使用：天差 / u.MonthDays()，得到天差所占 u 月天数的比值，
+		// 再与 [初始月差] 相加得到 [总月份差]。
+		return months + days/float64(u.MonthDays())
 	case "d":
-		return int(t.Sub(u).Hours() / 24)
+		return t.Sub(u).Hours() / 24
 	case "h":
-		return int(t.Sub(u).Hours())
+		return t.Sub(u).Hours()
 	case "m":
-		return int(t.Sub(u).Minutes())
+		return t.Sub(u).Minutes()
 	case "s":
-		return int(t.Sub(u).Seconds())
+		return t.Sub(u).Seconds()
 	}
 	return 0
 }
 
-func (t Time) DiffAbsIn(u Time, unit string) int {
-	return int(math.Abs(float64(t.DiffIn(u, unit))))
+func (t Time) DiffAbsIn(u Time, unit string) float64 {
+	return math.Abs(t.DiffIn(u, unit))
 }
 
 // Sub 返回 t - u 的时间差
@@ -515,18 +531,28 @@ func (t Time) IsDST() bool {
 	return t.time.IsDST()
 }
 
-// IsLeap 返回 year 是否闰年
-func IsLeap(year int) bool {
-	return year%4 == 0 && (year%100 != 0 || year%400 == 0)
+// IsLeapYear 返回 y 是否闰年
+func IsLeapYear(y int) bool {
+	return y%4 == 0 && (y%100 != 0 || y%400 == 0)
 }
 
-// DaysIn 返回 y 年 m 月的最大天数
+// DaysIn 返回 y 年天数或 y 年 m 月天数
 //
-// 1, 3, 5, 7, 8, 10, 12 月有 31 天；4, 6, 9, 11 月有 30 天；
-// 平年 2 月有 28 天，闰年 29 天。
-func DaysIn(y, m int) int {
-	if m == 2 && IsLeap(y) {
-		return 29
+// 各月份的最大天数：
+//
+//   - 1, 3, 5, 7, 8, 10, 12 月有 31 天；4, 6, 9, 11 月有 30 天；
+//   - 平年 2 月有 28 天，闰年 29 天。
+func DaysIn[T ~int](y T, m ...T) int {
+	if m != nil {
+		if m[0] == 2 && IsLeapYear(int(y)) {
+			return 29
+		}
+		return maxDays[m[0]]
 	}
-	return maxDays[m]
+
+	if IsLeapYear(int(y)) {
+		return 366
+	}
+
+	return 365
 }

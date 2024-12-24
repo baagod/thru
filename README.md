@@ -111,8 +111,9 @@ Second(6)int // 微秒 (6位)
 Second(9)int // 纳秒 (9位)
 
 Clock() (hour, min, sec int) // 返回一天中的小时、分钟和秒
-YearDay() int // 返回年份中的日期，非闰年的范围为 [1, 365]，闰年的范围为 [1, 366]。
-Days() int    // 本月最大天数
+YearDay() int   // 返回一年中的第几天，非闰年范围 [1, 365]，闰年范围 [1, 366]。
+Days() int      // 本年总天数
+MonthDays() int // 本月总天数
 
 Unix()  int64  // 秒时间戳 (10位)
 Unix(3) int64  // 毫秒时间戳 (13位)
@@ -133,8 +134,8 @@ Time() Time                 // 返回 time.Time
 
 比较时间差主要由以下两个函数返回，可指定要比较的时间单位。
 
-- `DiffIn(u Time, uint string) int`
-- `DiffAbsIn(u Time, uint string) int`
+- `DiffIn(u Time, uint string) float64`
+- `DiffAbsIn(u Time, uint string) float64`
 
 ```go
 DiffIn('y') // 返回年差
@@ -167,6 +168,6 @@ now.Format("2006年01年02日") // 指定时间布局格式返回
 ```go
 IsZero() bool // 返回时间是否零时，即 0001-01-01 00:00:00 UTC。
 ZeroOr(u Time) // 使用 u 代替零时 (isZero() is true) 时间
-thru.IsLeap(year int) // 返回 year 是否闰年
-thru.DaysIn(2024, 2) // 返回指定年的月份最大天数
+thru.IsLeapYear(y int) // 返回 y 是否闰年
+thru.DaysIn(y int, ...m int) // 返回 y 年天数或 y 年 m 月天数
 ```
