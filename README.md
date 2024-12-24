@@ -100,31 +100,30 @@ now.StartWeek(2)  // 两周后的星期一开始时间
 获得各种时间的函数，例如要获得年、月、日、时、分、秒等。
 
 ```go
-Year()    // 今年
-YearDay() // 返回年份中的日期，非闰年的范围为 [1, 365]，闰年的范围为 [1, 366]。
-Month()   // 本月
-Day()     // 返回本月的第几天
-Days()    // 本月最大天数
-Hour()    // 返回小时 [0, 23]
-Minute()  // 返回分钟 [0, 59]
-Second()  // 返回秒 [0, 59]
-Second(3) // 毫秒 (3位)
-Second(6) // 微秒 (6位)
-Second(9) // 纳秒 (9位)
+Year() int   // 今年
+Month() int  // 本月
+Day() int    // 返回本月的第几天
+Hour() int   // 返回小时 [0, 23]
+Minute() int // 返回分钟 [0, 59]
+Second() int // 返回秒 [0, 59]
+Second(3)int // 毫秒 (3位)
+Second(6)int // 微秒 (6位)
+Second(9)int // 纳秒 (9位)
 
-Unix()  // 秒时间戳 (10位)
-Unix(3) // 毫秒时间戳 (13位)
-Unix(6) // 微秒时间戳 (16位)
-Unix(9) // 纳秒时间戳 (19位)
+Clock() (hour, min, sec int) // 返回一天中的小时、分钟和秒
+YearDay() int // 返回年份中的日期，非闰年的范围为 [1, 365]，闰年的范围为 [1, 366]。
+Days() int    // 本月最大天数
 
-UTC() // 返回 UTC 时间
-Local() // 返回本地时间
-In(loc *time.Location) // 返回指定的 loc 时间
-Location() // 返回时区信息
+Unix()  int64  // 秒时间戳 (10位)
+Unix(3) int64  // 毫秒时间戳 (13位)
+Unix(6) int64  // 微秒时间戳 (16位)
+Unix(9) int64  // 纳秒时间戳 (19位)
 
-Time()    // 返回 time.Time
-ZeroOr(u Time) // 使用 u 代替零时 (isZero() is true) 时间
-thru.DaysIn(2024, 2) // 返回指定年的月份最大天数
+UTC() Time                  // 返回 UTC 时间
+Local() Time                // 返回本地时间
+In(loc *time.Location) Time // 返回指定的 loc 时间
+Location() *time.Location   // 返回时区信息
+Time() Time                 // 返回 time.Time
 ```
 
 ### 比较时间
@@ -145,20 +144,26 @@ DiffIn('s') // 返回秒差
 
 另外补充具有和 `time` 包中相同的行为的函数：
 
-- `IsZero() bool`
-- `Before(u Time) bool`
-- `After(u Time) bool`
-- `Equal(u Time) bool`
-- `Compare(u Time) int`
-- `Sub(u Time) time.Duration` 返回 `t - u` 的时间差
-- `thru.Since(Time)` 返回自 `t` 以来经过的时间。它是 `Now().Sub(t)` 的简写。
-- `thru.Until(Time)` 返回直到 `t` 的持续时间。它是 `t.Sub(Now())` 的简写。
-
-还可以使用 `thru.IsLeap(int)` 函数判断是否闰年。
+- `Before(u Time) bool`: 返回 `t < u`
+- `After(u Time) bool`: 返回 `t > u`
+- `Equal(u Time) bool`: 返回 `t == u`
+- `Compare(u Time) int`: 如果 t 小于 u，返回 -1；大于返回 1；等于返回 0
+- `Sub(u Time) time.Duration`: 返回 `t - u` 的时间差
+- `thru.Since(Time)`: 返回自 `t` 以来经过的时间。它是 `Now().Sub(t)` 的简写。
+- `thru.Until(Time)`: 返回直到 `t` 的持续时间。它是 `t.Sub(Now())` 的简写。
 
 ### 时间字符串
 
 ```go
 now.String()   // 返回日期时间字符串: 2023-03-19 15:05:27
 now.Format("2006年01年02日") // 指定时间布局格式返回
+```
+
+### 其他
+
+```go
+IsZero() bool // 返回时间是否零时，即 0001-01-01 00:00:00 UTC。
+ZeroOr(u Time) // 使用 u 代替零时 (isZero() is true) 时间
+thru.IsLeap(year int) // 返回 year 是否闰年
+thru.DaysIn(2024, 2) // 返回指定年的月份最大天数
 ```
