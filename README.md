@@ -110,8 +110,8 @@ Second(3)int // 毫秒 (3位)
 Second(6)int // 微秒 (6位)
 Second(9)int // 纳秒 (9位)
 
-Clock() (hour, min, sec int) // 返回一天中的小时、分钟和秒
-YearDay() int   // 返回一年中的第几天，非闰年范围 [1, 365]，闰年范围 [1, 366]。
+Clock() (hour, min, sec int) // 一天中的小时、分钟和秒
+YearDay() int   // 一年中的第几天，非闰年范围 [1, 365]，闰年范围 [1, 366]。
 Days() int      // 本年总天数
 MonthDays() int // 本月总天数
 
