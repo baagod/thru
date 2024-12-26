@@ -498,7 +498,7 @@ func (t Time) Value() (driver.Value, error) {
 	if t.IsZero() {
 		return nil, nil
 	}
-	return t, nil
+	return t.time, nil
 }
 
 // MarshalJSON 将 t 转为 JSON 字符串时调用
